@@ -3,52 +3,22 @@
 
 namespace Fruitcake\Honeywell;
 
+use Fruitcake\Honeywell\Models\Device;
 use Fruitcake\Honeywell\Models\HoneywellAccessCredentials;
+use Fruitcake\Honeywell\Models\Location;
+use Fruitcake\Honeywell\Traits\AuthenticatesClient;
+use Fruitcake\Honeywell\Traits\CreatesRequests;
 use GuzzleHttp\Client;
-use Psr\Http\Message\ResponseInterface;
 
 
 class HoneywellClient
 {
-    /**
-     * @var string $authUrl
-     */
-    private $authUrl = 'https://api.honeywell.com/oauth2/authorize';
+    use AuthenticatesClient, CreatesRequests;
 
     /**
-     * @var string $tokenUrl
+     * @var string
      */
-    private $tokenUrl = 'https://api.honeywell.com/oauth2/token';
-
-    /**
-     * @var Client $httpClient
-     */
-    protected $httpClient;
-
-    /**
-     * @var HoneywellAccessCredentials $accessCredentials
-     */
-    protected $accessCredentials;
-
-    /**
-     * @var string $redirectUri
-     */
-    protected $redirectUri;
-
-    /**
-     * @var string $consumerKey
-     */
-    protected $consumerKey;
-
-    /**
-     * @var string $consumerSecret
-     */
-    protected $consumerSecret;
-
-    /**
-     * @var callable $onCredentialsCallback
-     */
-    protected $onCredentialsCallback;
+    protected $baseUrl = 'https://api.honeywell.com/';
 
     /**
      * HoneywellClient constructor.
@@ -72,119 +42,53 @@ class HoneywellClient
         $this->accessCredentials = $accessCredentials ?? new HoneywellAccessCredentials();
     }
 
-
     /**
-     *
-     * Authenticate with honeywell if nessecary.
-     *
-     * @return $this
+     * @return array
      */
-    public function authenticate()
+    public function getLocations() : array
     {
-        if (request('code')) {
-            $this->accessCredentials->setAuthorizationCode(request('code'));
+        $locations = [];
+        foreach ($this->request('v2/locations') as $location) {
+            $model = new Location();
+            $model->setName($location->name);
+            $model->setId($location->locationID);
+            $devices = [];
+
+            foreach ($location->devices as $device) {
+                $deviceModel = new Device();
+                $deviceModel->setId($device->deviceID);
+                $deviceModel->setName($device->userDefinedDeviceName);
+                $deviceModel->setIndoorTemperature($device->indoorTemperature);
+                $deviceModel->setOutdoorTemperature($device->outdoorTemperature);
+                $deviceModel->setHumidity($device->displayedOutdoorHumidity);
+
+                $devices[] = $deviceModel;
+            }
+
+            $model->setDevices($devices);
+
+            $locations[] = $model;
         }
 
-        if (!$this->accessCredentials->getAuthorizationCode() && !request('code')) {
-            $this->redirectToAuthorizationPage();
-        }
-
-        if (!$this->accessCredentials->getRefreshToken() && !$this->accessCredentials->getAccessToken()) {
-            $this->requestAccessToken();
-
-        }
-        if ($this->accessCredentials->accessTokenIsExpired() && $this->accessCredentials->getRefreshToken()) {
-            $this->refreshAccessToken();
-        }
-
-        return $this;
+        return $locations;
     }
 
-    /**
-     * Redirect if not authenticated yet.
-     */
-    private function redirectToAuthorizationPage()
+    public function changeTemperature(Device $device, Location $location, float $toTemperature)
     {
-        header('Location: '.$this->authUrl.'?'.http_build_query([
-                'client_id' => $this->consumerKey,
-                'response_type' => 'code',
-                'redirect_uri' => $this->redirectUri,
-            ]));
+        $device = $this->request('v2/devices/thermostats/'.$device->getId(), [
+            "mode" => "Cool",
+            "heatSetpoint" => $toTemperature,
+            "coolSetpoint" => $toTemperature,
+            'AutoChangeoverActive' => true,
+        ], ['locationId' => $location->getId()]);
 
-        exit;
+        $deviceModel = new Device();
+        $deviceModel->setId($device->deviceID);
+        $deviceModel->setName($device->userDefinedDeviceName);
+        $deviceModel->setIndoorTemperature($device->indoorTemperature);
+        $deviceModel->setOutdoorTemperature($device->outdoorTemperature);
+        $deviceModel->setHumidity($device->displayedOutdoorHumidity);
+        dd($deviceModel, $device);
     }
-
-    /**
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    private function refreshAccessToken()
-    {
-        $response = $this->httpClient->request('POST', $this->tokenUrl, [
-            'form_params' => [
-                'refresh_token' => $this->accessCredentials->getRefreshToken(),
-                'grant_type' => 'refresh_token',
-                'redirect_uri' => $this->redirectUri,
-            ],
-            'headers' => [
-                'Authorization' => sprintf('Basic %s', $this->getBase64Key()),
-            ],
-        ]);
-
-        $this->toAccessCredentials($response);
-    }
-
-    /**
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    private function requestAccessToken()
-    {
-        $response = $this->httpClient->request('POST', $this->tokenUrl, [
-            'form_params' => [
-                'code' => $this->accessCredentials->getAuthorizationCode(),
-                'grant_type' => 'authorization_code',
-                'redirect_uri' => $this->redirectUri,
-            ],
-            'headers' => [
-                'Authorization' => sprintf('Basic %s', $this->getBase64Key()),
-            ],
-        ]);
-
-        $this->toAccessCredentials($response);
-
-    }
-
-    /**
-     * @return string
-     */
-    private function getBase64Key()
-    {
-        return base64_encode(sprintf('%s:%s', $this->consumerKey, $this->consumerSecret));
-    }
-
-    /**
-     * @param  callable  $onCredentialsCallback
-     *
-     * @return HoneywellClient
-     */
-    public function setOnCredentialsCallback(callable $onCredentialsCallback) : HoneywellClient
-    {
-        $this->onCredentialsCallback = $onCredentialsCallback;
-
-        return $this;
-    }
-
-    /**
-     * @param  ResponseInterface  $response
-     */
-    private function toAccessCredentials(ResponseInterface $response) : void
-    {
-        $body = json_decode($response->getBody());
-        $this->accessCredentials->setAccessToken($body->access_token);
-        $this->accessCredentials->setRefreshToken($body->refresh_token);
-        $this->accessCredentials->setTokenExpireTime(time() + $body->expires_in);
-
-        ($this->onCredentialsCallback)($this->accessCredentials);
-    }
-
 
 }
