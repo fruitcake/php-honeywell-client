@@ -1,5 +1,6 @@
 {
     "name": "fruitcake/honeywell-client",
+    "description": "Fruitcake Honeywell client for honeywell T-type Thermostats",
     "require": {
         "guzzlehttp/guzzle": "~6.0"
     },
