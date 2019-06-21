@@ -1,13 +1,13 @@
 <?php
 
 
-namespace Fruitcake\Honeywell;
+namespace Fruitcake\HoneywellClient;
 
-use Fruitcake\Honeywell\Models\Device;
-use Fruitcake\Honeywell\Models\HoneywellAccessCredentials;
-use Fruitcake\Honeywell\Models\Location;
-use Fruitcake\Honeywell\Traits\AuthenticatesClient;
-use Fruitcake\Honeywell\Traits\CreatesRequests;
+use Fruitcake\HoneywellClient\Models\Device;
+use Fruitcake\HoneywellClient\Models\HoneywellAccessCredentials;
+use Fruitcake\HoneywellClient\Models\Location;
+use Fruitcake\HoneywellClient\Traits\AuthenticatesClient;
+use Fruitcake\HoneywellClient\Traits\CreatesRequests;
 use GuzzleHttp\Client;
 
 

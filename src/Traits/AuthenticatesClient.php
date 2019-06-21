@@ -1,9 +1,9 @@
 <?php
 
-namespace Fruitcake\Honeywell\Traits;
+namespace Fruitcake\HoneywellClient\Traits;
 
-use Fruitcake\Honeywell\HoneywellClient;
-use Fruitcake\Honeywell\Models\HoneywellAccessCredentials;
+use Fruitcake\HoneywellClient\HoneywellClient;
+use Fruitcake\HoneywellClient\Models\HoneywellAccessCredentials;
 use GuzzleHttp\Client;
 use Psr\Http\Message\ResponseInterface;
 

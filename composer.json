@@ -5,7 +5,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Fruitcake\\Honeywell\\": "./src"
+            "Fruitcake\\HoneywellClient\\": "./src"
         }
     }
 }

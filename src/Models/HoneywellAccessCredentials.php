@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Fruitcake\Honeywell\Models;
+namespace Fruitcake\HoneywellClient\Models;
 
 
 class HoneywellAccessCredentials

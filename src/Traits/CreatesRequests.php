@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Fruitcake\Honeywell\Traits;
+namespace Fruitcake\HoneywellClient\Traits;
 
 
 trait CreatesRequests
