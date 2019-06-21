@@ -38,29 +38,29 @@ class HoneywellClient
         $this->redirectUri = $redirectUri;
         $this->consumerKey = $consumerKey;
         $this->consumerSecret = $consumerSecret;
-        $this->httpClient = $httpClient ?? new Client();
+        $this->httpClient = $httpClient ?? new Client([
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                ],
+            ]);
         $this->accessCredentials = $accessCredentials ?? new HoneywellAccessCredentials();
     }
 
     /**
      * @return array
      */
-    public function getLocations() : array
+    public function getLocationsAndDevices() : array
     {
         $locations = [];
-        foreach ($this->request('v2/locations') as $location) {
+        foreach ($this->request('v2/locations', 'GET') as $location) {
             $model = new Location();
             $model->setName($location->name);
             $model->setId($location->locationID);
             $devices = [];
 
             foreach ($location->devices as $device) {
-                $deviceModel = new Device();
-                $deviceModel->setId($device->deviceID);
-                $deviceModel->setName($device->userDefinedDeviceName);
-                $deviceModel->setIndoorTemperature($device->indoorTemperature);
-                $deviceModel->setOutdoorTemperature($device->outdoorTemperature);
-                $deviceModel->setHumidity($device->displayedOutdoorHumidity);
+                $deviceModel = $this->responseToDevice($device);
 
                 $devices[] = $deviceModel;
             }
@@ -73,22 +73,101 @@ class HoneywellClient
         return $locations;
     }
 
-    public function changeTemperature(Device $device, Location $location, float $toTemperature)
+    /**
+     * @param $location
+     *
+     * @return array
+     */
+    public function getDevices($location)
     {
-        $device = $this->request('v2/devices/thermostats/'.$device->getId(), [
-            "mode" => "Cool",
+        $locationId = $location;
+        if ($location instanceof Location) {
+            $locationId = $location->getId();
+        }
+
+        return array_map([$this, 'responseToDevice'], $this->request('v2/devices', 'GET', [], [
+            'locationId' => $locationId,
+        ]));
+    }
+
+    public function getDevice($location, $device)
+    {
+        $deviceId = $device;
+        if ($device instanceof Device) {
+            $deviceId = $device->getId();
+        }
+
+        $locationId = $location;
+        if ($location instanceof Location) {
+            $locationId = $location->getId();
+        }
+
+        return collect($this->getDevices($locationId))->where('id', $deviceId)->first();
+    }
+
+    /**
+     * @param  string|Device  $device
+     * @param  string|Location  $location
+     * @param  float  $toTemperature
+     * @param  bool  $temporary
+     *
+     * @return Device
+     */
+    public function changeTemperature($device, $location, float $toTemperature, bool $temporary = true)
+    {
+        $deviceId = $device;
+        if ($device instanceof Device) {
+            $deviceId = $device->getId();
+        }
+
+        $locationId = $location;
+        if ($location instanceof Location) {
+            $locationId = $location->getId();
+        }
+
+        $response = $this->request('v2/devices/thermostats/'.$deviceId, 'POST', [
+            "mode" => $this->determineMode($device, $toTemperature),
             "heatSetpoint" => $toTemperature,
             "coolSetpoint" => $toTemperature,
-            'AutoChangeoverActive' => true,
-        ], ['locationId' => $location->getId()]);
+            'thermostatSetpointStatus' => $temporary ? 'TemporaryHold' : 'PermanentHold',
+        ], ['locationId' => $locationId]);
 
-        $deviceModel = new Device();
-        $deviceModel->setId($device->deviceID);
-        $deviceModel->setName($device->userDefinedDeviceName);
-        $deviceModel->setIndoorTemperature($device->indoorTemperature);
-        $deviceModel->setOutdoorTemperature($device->outdoorTemperature);
-        $deviceModel->setHumidity($device->displayedOutdoorHumidity);
-        dd($deviceModel, $device);
+        if (!$response) {
+            $device->setScheduledTemperature($toTemperature);
+        }
+
+        return $device;
+    }
+
+    /**
+     * @param  Device  $device
+     * @param  float  $toTemperature
+     *
+     * @return string
+     */
+    private function determineMode(Device $device, float $toTemperature)
+    {
+        return $device->getIndoorTemperature() < $toTemperature ? 'Heat' : 'Cool';
+    }
+
+    /**
+     * @param $device
+     *
+     * @return Device
+     */
+    private function responseToDevice($device) : Device
+    {
+        return (new Device())->setId($device->deviceID)
+            ->setUnits($device->units)
+            ->setOnline($device->isAlive)
+            ->setName($device->userDefinedDeviceName ?? '')
+            ->setIndoorTemperature($device->indoorTemperature)
+            ->setOutdoorTemperature($device->outdoorTemperature)
+            ->setHumidity($device->displayedOutdoorHumidity)
+            ->setModel($device->deviceModel)
+            ->setScheduledTemperature($device->changeableValues->heatSetpoint)
+            ->setMode($device->changeableValues->mode)
+            ->setModeUntil($device->changeableValues->holdUntil);
     }
 
 }

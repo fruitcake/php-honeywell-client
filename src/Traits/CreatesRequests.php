@@ -11,7 +11,7 @@ trait CreatesRequests
      *
      * @return mixed
      */
-    private function request(string $endpoint, array $body = null, array $queryParams = null)
+    private function request(string $endpoint, $method = 'POST', array $body = null, array $queryParams = null)
     {
         $queryParamsString = '';
         if ($queryParams) {
@@ -20,13 +20,15 @@ trait CreatesRequests
             }
         }
 
-        $response = $this->httpClient->request('GET', $this->baseUrl.'/'.$endpoint.'?apikey=' .$this->consumerKey . $queryParamsString, [
-            'headers' => [
-                'Authorization' => sprintf('Bearer %s', $this->accessCredentials->getAccessToken()),
-            ],
-            'form_params' => $body,
-        ]);
 
-        return json_decode($response->getBody());
+        $response = $this->httpClient->request($method,
+            $this->baseUrl.'/'.$endpoint.'?apikey='.$this->consumerKey.$queryParamsString, [
+                'headers' => [
+                    'Authorization' => sprintf('Bearer %s', $this->accessCredentials->getAccessToken()),
+                ],
+                'body' => json_encode($body),
+            ]);
+
+        return json_decode($response->getBody()->getContents());
     }
 }
