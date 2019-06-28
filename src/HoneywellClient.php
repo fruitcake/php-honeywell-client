@@ -167,7 +167,7 @@ class HoneywellClient
             ->setModel($device->deviceModel)
             ->setScheduledTemperature($device->changeableValues->heatSetpoint)
             ->setMode($device->changeableValues->mode)
-            ->setModeUntil($device->changeableValues->holdUntil);
+            ->setModeUntil($device->changeableValues->holdUntil ?? '');
     }
 
 }
