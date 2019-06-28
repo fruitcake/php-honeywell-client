@@ -48,14 +48,24 @@ trait AuthenticatesClient
      * @var callable $onCredentialsCallback
      */
     protected $onCredentialsCallback;
+
+    /**
+     * @var array $parameters
+     */
+    protected $parameters;
+
+
     /**
      *
      * Authenticate with honeywell if nessecary.
      *
      * @return $this
      */
-    public function authenticate()
+    public function authenticate(array $parameters = null)
     {
+        if ($parameters){
+            $this->setParameters($parameters);
+        }
         if (request('code')) {
             $this->accessCredentials->setAuthorizationCode(request('code'));
         }
@@ -83,7 +93,7 @@ trait AuthenticatesClient
         header('Location: '.$this->baseUrl .$this->authUrl.'?'.http_build_query([
                 'client_id' => $this->consumerKey,
                 'response_type' => 'code',
-                'redirect_uri' => $this->redirectUri,
+                'redirect_uri' => $this->redirectUri.'?'.http_build_query($this->getParameters()),
             ]));
 
         exit;
@@ -117,7 +127,7 @@ trait AuthenticatesClient
             'form_params' => [
                 'code' => $this->accessCredentials->getAuthorizationCode(),
                 'grant_type' => 'authorization_code',
-                'redirect_uri' => $this->redirectUri,
+                'redirect_uri' => $this->redirectUri.'?'.http_build_query([$this->getParameters()]),
             ],
             'headers' => [
                 'Authorization' => sprintf('Basic %s', $this->getBase64Key()),
@@ -160,4 +170,25 @@ trait AuthenticatesClient
 
         ($this->onCredentialsCallback)($this->accessCredentials);
     }
+
+    /**
+     * @return array
+     */
+    public function getParameters() : array
+    {
+        return $this->parameters;
+    }
+
+    /**
+     * @param  array  $parameters
+     *
+     * @return AuthenticatesClient
+     */
+    public function setParameters(array $parameters) : HoneywellClient
+    {
+        $this->parameters = $parameters;
+
+        return $this;
+    }
+
 }
