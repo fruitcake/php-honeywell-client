@@ -108,7 +108,7 @@ trait AuthenticatesClient
             'form_params' => [
                 'refresh_token' => $this->accessCredentials->getRefreshToken(),
                 'grant_type' => 'refresh_token',
-                'redirect_uri' => $this->redirectUri,
+                'redirect_uri' => $this->redirectUri.'?'.http_build_query($this->getParameters()),
             ],
             'headers' => [
                 'Authorization' => sprintf('Basic %s', $this->getBase64Key()),
@@ -127,7 +127,7 @@ trait AuthenticatesClient
             'form_params' => [
                 'code' => $this->accessCredentials->getAuthorizationCode(),
                 'grant_type' => 'authorization_code',
-                'redirect_uri' => $this->redirectUri.'?'.http_build_query([$this->getParameters()]),
+                'redirect_uri' => $this->redirectUri.'?'.http_build_query($this->getParameters()),
             ],
             'headers' => [
                 'Authorization' => sprintf('Basic %s', $this->getBase64Key()),
