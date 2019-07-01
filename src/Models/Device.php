@@ -184,7 +184,7 @@ class Device
     /**
      * @return string
      */
-    public function getModel() : string
+    public function getModel()
     {
         return $this->model;
     }
@@ -194,7 +194,7 @@ class Device
      *
      * @return Device
      */
-    public function setModel(string $model) : Device
+    public function setModel($model)
     {
         $this->model = $model;
 
@@ -204,7 +204,7 @@ class Device
     /**
      * @return float
      */
-    public function getScheduledTemperature() : float
+    public function getScheduledTemperature()
     {
         return $this->scheduledTemperature;
     }
@@ -214,7 +214,7 @@ class Device
      *
      * @return Device
      */
-    public function setScheduledTemperature(float $scheduledTemperature) : Device
+    public function setScheduledTemperature($scheduledTemperature)
     {
         $this->scheduledTemperature = $scheduledTemperature;
 
@@ -224,7 +224,7 @@ class Device
     /**
      * @return string
      */
-    public function getMode() : string
+    public function getMode()
     {
         return $this->mode;
     }
@@ -234,7 +234,7 @@ class Device
      *
      * @return Device
      */
-    public function setMode(string $mode) : Device
+    public function setMode($mode)
     {
         $this->mode = $mode;
 
@@ -244,7 +244,7 @@ class Device
     /**
      * @return bool
      */
-    public function isOnline() : bool
+    public function isOnline()
     {
         return $this->online;
     }
@@ -254,7 +254,7 @@ class Device
      *
      * @return Device
      */
-    public function setOnline(bool $online) : Device
+    public function setOnline($online)
     {
         $this->online = $online;
 
@@ -264,7 +264,7 @@ class Device
     /**
      * @return string
      */
-    public function getUnits() : string
+    public function getUnits()
     {
         return $this->units;
     }
@@ -274,7 +274,7 @@ class Device
      *
      * @return Device
      */
-    public function setUnits(string $units) : Device
+    public function setUnits($units)
     {
         $this->units = $units;
 
