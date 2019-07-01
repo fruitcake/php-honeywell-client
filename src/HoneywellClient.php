@@ -38,19 +38,19 @@ class HoneywellClient
         $this->redirectUri = $redirectUri;
         $this->consumerKey = $consumerKey;
         $this->consumerSecret = $consumerSecret;
-        $this->httpClient = $httpClient ?? new Client([
+        $this->httpClient = $httpClient ?: new Client([
                 'headers' => [
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
                 ],
             ]);
-        $this->accessCredentials = $accessCredentials ?? new HoneywellAccessCredentials();
+        $this->accessCredentials = $accessCredentials ?: new HoneywellAccessCredentials();
     }
 
     /**
      * @return array
      */
-    public function getLocationsAndDevices() : array
+    public function getLocationsAndDevices()
     {
         $locations = [];
         foreach ($this->request('v2/locations', 'GET') as $location) {
@@ -113,7 +113,7 @@ class HoneywellClient
      *
      * @return Device
      */
-    public function changeTemperature($device, $location, float $toTemperature, bool $temporary = true)
+    public function changeTemperature($device, $location, $toTemperature, $temporary = true)
     {
         $deviceId = $device;
         if ($device instanceof Device) {
@@ -145,7 +145,7 @@ class HoneywellClient
      *
      * @return string
      */
-    private function determineMode(Device $device, float $toTemperature)
+    private function determineMode(Device $device, $toTemperature)
     {
         return $device->getIndoorTemperature() < $toTemperature ? 'Heat' : 'Cool';
     }
@@ -155,19 +155,27 @@ class HoneywellClient
      *
      * @return Device
      */
-    private function responseToDevice($device) : Device
+    private function responseToDevice($device)
     {
         return (new Device())->setId($device->deviceID)
             ->setUnits($device->units)
             ->setOnline($device->isAlive)
-            ->setName($device->userDefinedDeviceName ?? '')
+            ->setName(isset($device->userDefinedDeviceName) ? $device->userDefinedDeviceName :  '')
             ->setIndoorTemperature($device->indoorTemperature)
             ->setOutdoorTemperature($device->outdoorTemperature)
             ->setHumidity($device->displayedOutdoorHumidity)
             ->setModel($device->deviceModel)
             ->setScheduledTemperature($device->changeableValues->heatSetpoint)
             ->setMode($device->changeableValues->mode)
-            ->setModeUntil($device->changeableValues->holdUntil ?? $device->changeableValues->nextPeriodTime ?? '');
+            ->setModeUntil(property_exists(
+                $device->changeableValues, 'holdUntil')
+                ?
+                $device->changeableValues->holdUntil
+                :
+                property_exists($device->changeableValues, 'nextPeriodTime')
+                    ?
+                    $device->changeableValues->nextPeriodTime : ''
+            );
     }
 
 }

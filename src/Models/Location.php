@@ -24,7 +24,7 @@ class Location
     /**
      * @return string
      */
-    public function getName() : string
+    public function getName()
     {
         return $this->name;
     }
@@ -34,7 +34,7 @@ class Location
      *
      * @return Location
      */
-    public function setName(string $name) : Location
+    public function setName($name)
     {
         $this->name = $name;
 
@@ -44,7 +44,7 @@ class Location
     /**
      * @return int
      */
-    public function getId() : int
+    public function getId()
     {
         return $this->id;
     }
@@ -54,7 +54,7 @@ class Location
      *
      * @return Location
      */
-    public function setId(int $id) : Location
+    public function setId($id)
     {
         $this->id = $id;
 
@@ -64,7 +64,7 @@ class Location
     /**
      * @return array
      */
-    public function getDevices() : array
+    public function getDevices()
     {
         return $this->devices;
     }
@@ -74,7 +74,7 @@ class Location
      *
      * @return Location
      */
-    public function setDevices(array $devices) : Location
+    public function setDevices($devices)
     {
         $this->devices = $devices;
 

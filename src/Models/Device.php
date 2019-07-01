@@ -64,7 +64,7 @@ class Device
     /**
      * @return string
      */
-    public function getId() : string
+    public function getId()
     {
         return $this->id;
     }
@@ -74,7 +74,7 @@ class Device
      *
      * @return Device
      */
-    public function setId(string $id) : Device
+    public function setId($id)
     {
         $this->id = $id;
 
@@ -84,7 +84,7 @@ class Device
     /**
      * @return int
      */
-    public function getHumidity() : int
+    public function getHumidity()
     {
         return $this->humidity;
     }
@@ -92,7 +92,7 @@ class Device
     /**
      * @return string
      */
-    public function getModeUntil() : string
+    public function getModeUntil()
     {
         return $this->modeUntil;
     }
@@ -102,7 +102,7 @@ class Device
      *
      * @return Device
      */
-    public function setModeUntil(string $modeUntil) : Device
+    public function setModeUntil($modeUntil)
     {
         $this->modeUntil = $modeUntil;
 
@@ -114,7 +114,7 @@ class Device
      *
      * @return Device
      */
-    public function setHumidity(int $humidity) : Device
+    public function setHumidity($humidity)
     {
         $this->humidity = $humidity;
 
@@ -124,7 +124,7 @@ class Device
     /**
      * @return string
      */
-    public function getName() : string
+    public function getName()
     {
         return $this->name;
     }
@@ -134,7 +134,7 @@ class Device
      *
      * @return Device
      */
-    public function setName(string $name) : Device
+    public function setName($name)
     {
         $this->name = $name;
 
@@ -144,7 +144,7 @@ class Device
     /**
      * @return int
      */
-    public function getIndoorTemperature() : int
+    public function getIndoorTemperature()
     {
         return $this->indoorTemperature;
     }
@@ -154,7 +154,7 @@ class Device
      *
      * @return Device
      */
-    public function setIndoorTemperature(int $indoorTemperature) : Device
+    public function setIndoorTemperature($indoorTemperature)
     {
         $this->indoorTemperature = $indoorTemperature;
 
@@ -164,7 +164,7 @@ class Device
     /**
      * @return int
      */
-    public function getOutdoorTemperature() : int
+    public function getOutdoorTemperature()
     {
         return $this->outdoorTemperature;
     }
@@ -174,7 +174,7 @@ class Device
      *
      * @return Device
      */
-    public function setOutdoorTemperature(int $outdoorTemperature) : Device
+    public function setOutdoorTemperature($outdoorTemperature)
     {
         $this->outdoorTemperature = $outdoorTemperature;
 

@@ -11,7 +11,7 @@ trait CreatesRequests
      *
      * @return mixed
      */
-    private function request(string $endpoint, $method = 'POST', array $body = null, array $queryParams = null)
+    private function request($endpoint, $method = 'POST', $body = null, $queryParams = null)
     {
         $queryParamsString = '';
         if ($queryParams) {

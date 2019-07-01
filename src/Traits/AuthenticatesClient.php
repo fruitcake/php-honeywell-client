@@ -61,7 +61,7 @@ trait AuthenticatesClient
      *
      * @return $this
      */
-    public function authenticate(array $parameters = null)
+    public function authenticate($parameters = null)
     {
         if ($parameters){
             $this->setParameters($parameters);
@@ -151,7 +151,7 @@ trait AuthenticatesClient
      *
      * @return HoneywellClient
      */
-    public function setOnCredentialsCallback(callable $onCredentialsCallback) : HoneywellClient
+    public function setOnCredentialsCallback($onCredentialsCallback)
     {
         $this->onCredentialsCallback = $onCredentialsCallback;
 
@@ -161,20 +161,20 @@ trait AuthenticatesClient
     /**
      * @param  ResponseInterface  $response
      */
-    private function toAccessCredentials(ResponseInterface $response) : void
+    private function toAccessCredentials(ResponseInterface $response)
     {
         $body = json_decode($response->getBody());
         $this->accessCredentials->setAccessToken($body->access_token);
         $this->accessCredentials->setRefreshToken($body->refresh_token);
         $this->accessCredentials->setTokenExpireTime(time() + $body->expires_in);
 
-        ($this->onCredentialsCallback)($this->accessCredentials);
+        call_user_func($this->onCredentialsCallback, $this->accessCredentials);
     }
 
     /**
      * @return array
      */
-    public function getParameters() : array
+    public function getParameters()
     {
         return $this->parameters;
     }
@@ -184,7 +184,7 @@ trait AuthenticatesClient
      *
      * @return AuthenticatesClient
      */
-    public function setParameters(array $parameters) : HoneywellClient
+    public function setParameters($parameters)
     {
         $this->parameters = $parameters;
 
